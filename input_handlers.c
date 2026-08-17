@@ -104,3 +104,65 @@ int check_builtin(char **argv, char *line, char **env)
 
 	return (0);
 }
+
+/**
+ * find_path - finds the full path of a command
+ * @command: command entered by the user
+ * @envp: environment variables
+ *
+ * Return: full path if found, NULL otherwise
+ */
+char *find_path(char *command, char **envp)
+{
+	char *path = NULL;
+	char *path_copy;
+	char *token;
+	char *pathname;
+	int i;
+
+	for (i = 0; envp[i] != NULL; i++)
+	{
+		if (strncmp(envp[i], "PATH=", 5) == 0)
+		{
+			path = envp[i] + 5;
+			break;
+		}
+	}
+
+	if (path == NULL)
+		return (NULL);
+
+	path_copy = strdup(path);
+
+	if (path_copy == NULL)
+		return (NULL);
+
+	token = strtok(path_copy, ":");
+
+	while (token != NULL)
+	{
+		pathname = malloc(strlen(token) + strlen(command) + 2);
+
+		if (pathname == NULL)
+		{
+			free(path_copy);
+			return (NULL);
+		}
+
+		strcpy(pathname, token);
+		strcat(pathname, "/");
+		strcat(pathname, command);
+
+		if (access(pathname, X_OK) == 0)
+		{
+			free(path_copy);
+			return (pathname);
+		}
+
+		free(pathname);
+		token = strtok(NULL, ":");
+	}
+
+	free(path_copy);
+	return (NULL);
+}
