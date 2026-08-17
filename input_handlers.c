@@ -118,16 +118,8 @@ char *find_path(char *command, char **envp)
 	char *path_copy;
 	char *token;
 	char *pathname;
-	int i;
 
-	for (i = 0; envp[i] != NULL; i++)
-	{
-		if (strncmp(envp[i], "PATH=", 5) == 0)
-		{
-			path = envp[i] + 5;
-			break;
-		}
-	}
+	path = get_path(envp);
 
 	if (path == NULL)
 		return (NULL);
@@ -164,5 +156,19 @@ char *find_path(char *command, char **envp)
 	}
 
 	free(path_copy);
+	return (NULL);
+}
+
+char *get_path(char **envp)
+{
+	int i;
+
+	for (i = 0; envp[i] != NULL; i++)
+	{
+		if (strncmp(envp[i], "PATH=", 5) == 0)
+		{
+			return (envp[i] + 5);
+		}
+	}
 	return (NULL);
 }
