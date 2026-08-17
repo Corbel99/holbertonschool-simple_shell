@@ -11,12 +11,8 @@ void display_prompt(void)
 
 /**
  * read_line - Lit une ligne depuis l'entrée standard
- * Return: Pointeur vers la chaîne lue
- */
-/**
- * read_line - Lit une ligne depuis l'entrée standard
- * @status: Statut de la dernière commande exécutée
- * Return: Pointeur vers la chaîne lue
+ * @status: Statut de la derniere commande executee
+ * Return: Pointeur vers la chaine lue
  */
 char *read_line(int *status)
 {
@@ -28,15 +24,14 @@ char *read_line(int *status)
 	if (read_bytes == -1)
 	{
 		free(line);
-		exit(*status); /* <-- Quitte avec le dernier statut enregistré (ex: 127) */
+		exit(*status);
 	}
 	return (line);
 }
 
-
 /**
- * parse_line - Découpe une ligne en tableau de mots
- * @line: La ligne à découper
+ * parse_line - Decoupe une ligne en tableau de mots
+ * @line: La ligne a decouper
  * Return: Tableau de pointeurs (argv)
  */
 char **parse_line(char *line)
@@ -74,11 +69,12 @@ char **parse_line(char *line)
 }
 
 /**
- * check_builtin - Vérifie et exécute les built-ins
+ * check_builtin - Verifie et execute les built-ins
  * @argv: Tableau d'arguments
  * @line: Buffer de la ligne
  * @env: Variable d'environnement
- * Return: 1 si built-in exécuté, 0 sinon
+ * @status: Statut de la derniere commande
+ * Return: 1 si built-in execute, 0 sinon
  */
 int check_builtin(char **argv, char *line, char **env, int status)
 {
@@ -91,7 +87,7 @@ int check_builtin(char **argv, char *line, char **env, int status)
 	{
 		free(line);
 		free(argv);
-		exit(status); /* Quitte avec le dernier statut */
+		exit(status);
 	}
 
 	if (strcmp(argv[0], "env") == 0)
@@ -106,72 +102,4 @@ int check_builtin(char **argv, char *line, char **env, int status)
 	}
 
 	return (0);
-}
-
-/**
- * get_path - Récupère la valeur de la variable PATH
- * @envp: Environnement système
- * Return: Pointeur vers la valeur du PATH, ou NULL si absent ou vide
- */
-char *get_path(char **envp)
-{
-	int i;
-
-	if (!envp)
-		return (NULL);
-
-	for (i = 0; envp[i] != NULL; i++)
-	{
-		if (strncmp(envp[i], "PATH=", 5) == 0)
-		{
-			if (envp[i][5] == '\0')
-				return (NULL);
-			return (envp[i] + 5);
-		}
-	}
-	return (NULL);
-}
-
-/**
- * find_path - Trouve le chemin complet d'une commande
- * @command: Commande tapée
- * @envp: Environnement système
- * Return: Pointeur alloué vers le chemin, ou NULL
- */
-char *find_path(char *command, char **envp)
-{
-	char *path, *path_copy, *token, *pathname;
-
-	if (!command || !*command)
-		return (NULL);
-	if (strchr(command, '/') != NULL)
-		return (access(command, X_OK) == 0 ? strdup(command) : NULL);
-
-	path = get_path(envp);
-	if (!path)
-		return (NULL);
-
-	path_copy = strdup(path);
-	if (!path_copy)
-		return (NULL);
-
-	token = strtok(path_copy, ":");
-	while (token)
-	{
-		pathname = malloc(strlen(token) + strlen(command) + 2);
-		if (!pathname)
-			break;
-		strcpy(pathname, token);
-		strcat(pathname, "/");
-		strcat(pathname, command);
-		if (access(pathname, X_OK) == 0)
-		{
-			free(path_copy);
-			return (pathname);
-		}
-		free(pathname);
-		token = strtok(NULL, ":");
-	}
-	free(path_copy);
-	return (NULL);
 }
