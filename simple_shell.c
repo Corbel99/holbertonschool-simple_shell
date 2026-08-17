@@ -24,17 +24,19 @@ int main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
-		printf("#cisfun$ ");
+			printf("#cisfun$ ");
 
 		if (getline(&line, &len, stdin) == -1)
 			break;
 
 		len = strlen(line);
 
+		/* Supprime le retour à la ligne ajouté par getline */
 		if (line[len - 1] == '\n')
-		{
 			line[len - 1] = '\0';
-		}
+
+		/* Récupère uniquement la commande */
+		line = strtok(line, " \t");
 
 		pid = fork();
 
@@ -64,9 +66,7 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		if (pid > 0)
-		{
 			wait(&status);
-		}
 	}
 
 	free(line);
