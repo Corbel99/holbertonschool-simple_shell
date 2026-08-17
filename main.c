@@ -3,7 +3,7 @@
 /**
  * main - Boucle principale du simple shell
  * @ac: Nombre d'arguments (non utilisé)
- * @av: Tableau d'arguments (non utilisé)
+ * @av: Tableau d'arguments
  * @env: Environnement système
  * Return: 0 en cas de succès
  */
@@ -14,7 +14,6 @@ int main(int ac, char **av, char **env)
 	int status;
 
 	(void)ac;
-	(void)av;
 
 	while (1)
 	{
@@ -22,7 +21,7 @@ int main(int ac, char **av, char **env)
 		line = read_line();
 		argv = parse_line(line);
 
-		/* Gestion ligne vide */
+		/* 1. Ligne vide */
 		if (argv[0] == NULL)
 		{
 			free(line);
@@ -30,7 +29,7 @@ int main(int ac, char **av, char **env)
 			continue;
 		}
 
-		/* Gestion des built-ins */
+		/* 2. Commandes built-in (exit, env) */
 		if (check_builtin(argv, line, env))
 		{
 			free(line);
@@ -38,19 +37,19 @@ int main(int ac, char **av, char **env)
 			continue;
 		}
 
-		/* 1. Résolution du chemin */
+		/* 3. Recherche du chemin dans le PATH */
 		cmd_path = find_path(argv[0], env);
 
-		/* 2. RÈGLE TASK 3 : Aucun fork si la commande n'existe pas */
+		/* 4. Si la commande n'existe pas : ERREUR + PAS DE FORK */
 		if (cmd_path == NULL)
 		{
-			perror(argv[0]);
+			print_error(av[0], argv[0], ": not found\n");
 			free(line);
 			free(argv);
 			continue;
 		}
 
-		/* 3. Le fork se fait SEULEMENT si la commande existe */
+		/* 5. Execution uniquement si la commande existe */
 		pid = fork();
 		if (pid == -1)
 		{
@@ -69,7 +68,7 @@ int main(int ac, char **av, char **env)
 				free(cmd_path);
 				free(line);
 				free(argv);
-				exit(1);
+				exit(127);
 			}
 		}
 		else
@@ -77,7 +76,7 @@ int main(int ac, char **av, char **env)
 			wait(&status);
 		}
 
-		/* Libération de la mémoire allouée par find_path */
+		/* Nettoyage de la mémoire du tour de boucle */
 		free(cmd_path);
 		free(line);
 		free(argv);

@@ -102,11 +102,10 @@ int check_builtin(char **argv, char *line, char **env)
 	return (0);
 }
 
-
 /**
  * get_path - Récupère la valeur de la variable PATH
  * @envp: Environnement système
- * Return: Pointeur vers la valeur du PATH, ou NULL
+ * Return: Pointeur vers la valeur du PATH, ou NULL si absent ou vide
  */
 char *get_path(char **envp)
 {
@@ -118,7 +117,11 @@ char *get_path(char **envp)
 	for (i = 0; envp[i] != NULL; i++)
 	{
 		if (strncmp(envp[i], "PATH=", 5) == 0)
+		{
+			if (envp[i][5] == '\0')
+				return (NULL);
 			return (envp[i] + 5);
+		}
 	}
 	return (NULL);
 }

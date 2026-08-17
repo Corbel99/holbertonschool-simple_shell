@@ -17,4 +17,6 @@ int check_builtin(char **argv, char *line, char **env);
 char *find_path(char *command, char **envp);
 char *get_path(char **envp);
 
+void print_error(char *shell_name, char *command, char *msg);
+
 #endif
