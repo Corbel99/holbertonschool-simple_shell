@@ -5,8 +5,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#define MAX_TOKENS 64
+
 /**
- * main - simple shell that executes commands with their full path
+ * main - simple shell that executes commands with their arguments
  *
  * Return: Always 0.
  */
@@ -14,10 +16,10 @@ int main(int argc, char **argv, char **envp)
 {
 	char *line = NULL;
 	size_t len = 0;
-	char *cmd;
 	pid_t pid;
-	int status;
+	int status, i;
 	char **exec_argv;
+	char *token;
 
 	(void)argc;
 	(void)argv;
@@ -30,37 +32,45 @@ int main(int argc, char **argv, char **envp)
 		if (getline(&line, &len, stdin) == -1)
 			break;
 
-		/* Extraction de la commande (élimine espaces, tabulations et \n) */
-		cmd = strtok(line, " \t\n");
+		exec_argv = malloc(sizeof(char *) * MAX_TOKENS);
+		if (exec_argv == NULL)
+		{
+			perror("malloc");
+			free(line);
+			return (1);
+		}
 
-		/* Si la ligne est vide ou ne contient que des espaces/sauts de ligne */
-		if (cmd == NULL)
+		/* Extraction de tous les arguments */
+		i = 0;
+		token = strtok(line, " \t\n");
+		while (token != NULL && i < MAX_TOKENS - 1)
+		{
+			exec_argv[i] = token;
+			i++;
+			token = strtok(NULL, " \t\n");
+		}
+		exec_argv[i] = NULL;
+
+		/* Ignorer les lignes vides */
+		if (exec_argv[0] == NULL)
+		{
+			free(exec_argv);
 			continue;
+		}
 
 		pid = fork();
 
 		if (pid == -1)
 		{
 			perror("fork");
+			free(exec_argv);
 			free(line);
 			return (1);
 		}
 
 		if (pid == 0)
 		{
-			exec_argv = malloc(sizeof(char *) * 2);
-
-			if (exec_argv == NULL)
-			{
-				perror("malloc");
-				free(line);
-				exit(1);
-			}
-
-			exec_argv[0] = cmd;
-			exec_argv[1] = NULL;
-
-			execve(cmd, exec_argv, envp);
+			execve(exec_argv[0], exec_argv, envp);
 			perror("execve");
 			free(exec_argv);
 			free(line);
@@ -68,7 +78,10 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		if (pid > 0)
+		{
 			wait(&status);
+			free(exec_argv);
+		}
 	}
 
 	free(line);
