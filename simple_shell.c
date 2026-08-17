@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -30,9 +31,9 @@ int main(int argc, char **argv, char **envp)
 		len = strlen(line);
 
 		if (line[len - 1] == '\n')
-        {
-            line[len - 1] = '\0';
-        }
+		{
+			line[len - 1] = '\0';
+		}
 
 		pid = fork();
 
