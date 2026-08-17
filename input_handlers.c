@@ -13,7 +13,12 @@ void display_prompt(void)
  * read_line - Lit une ligne depuis l'entrée standard
  * Return: Pointeur vers la chaîne lue
  */
-char *read_line(void)
+/**
+ * read_line - Lit une ligne depuis l'entrée standard
+ * @status: Statut de la dernière commande exécutée
+ * Return: Pointeur vers la chaîne lue
+ */
+char *read_line(int *status)
 {
 	char *line = NULL;
 	size_t bufsize = 0;
@@ -23,10 +28,11 @@ char *read_line(void)
 	if (read_bytes == -1)
 	{
 		free(line);
-		exit(EXIT_SUCCESS);
+		exit(*status); /* <-- Quitte avec le dernier statut enregistré (ex: 127) */
 	}
 	return (line);
 }
+
 
 /**
  * parse_line - Découpe une ligne en tableau de mots
@@ -74,7 +80,7 @@ char **parse_line(char *line)
  * @env: Variable d'environnement
  * Return: 1 si built-in exécuté, 0 sinon
  */
-int check_builtin(char **argv, char *line, char **env)
+int check_builtin(char **argv, char *line, char **env, int status)
 {
 	int i = 0;
 
@@ -85,7 +91,7 @@ int check_builtin(char **argv, char *line, char **env)
 	{
 		free(line);
 		free(argv);
-		exit(EXIT_SUCCESS);
+		exit(status); /* Quitte avec le dernier statut */
 	}
 
 	if (strcmp(argv[0], "env") == 0)

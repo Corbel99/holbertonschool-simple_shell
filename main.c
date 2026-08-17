@@ -5,20 +5,20 @@
  * @ac: Nombre d'arguments (non utilisé)
  * @av: Tableau d'arguments
  * @env: Environnement système
- * Return: 0 en cas de succès
+ * Return: Dernier code de statut d'exécution
  */
 int main(int ac, char **av, char **env)
 {
 	char *line, **argv, *cmd_path;
 	pid_t pid;
-	int status;
+	int status = 0, last_status = 0;
 
 	(void)ac;
 
 	while (1)
 	{
 		display_prompt();
-		line = read_line();
+		line = read_line(&last_status); /* Transmission du statut à la fermeture */
 		argv = parse_line(line);
 
 		/* 1. Ligne vide */
@@ -30,7 +30,7 @@ int main(int ac, char **av, char **env)
 		}
 
 		/* 2. Commandes built-in (exit, env) */
-		if (check_builtin(argv, line, env))
+		if (check_builtin(argv, line, env, last_status))
 		{
 			free(line);
 			free(argv);
@@ -40,16 +40,17 @@ int main(int ac, char **av, char **env)
 		/* 3. Recherche du chemin dans le PATH */
 		cmd_path = find_path(argv[0], env);
 
-		/* 4. Si la commande n'existe pas : ERREUR + PAS DE FORK */
+		/* 4. Si la commande n'existe pas : ERREUR 127 + PAS DE FORK */
 		if (cmd_path == NULL)
 		{
 			print_error(av[0], argv[0], ": not found\n");
 			free(line);
 			free(argv);
+			last_status = 127; /* <-- Code de retour 127 pour commande introuvable */
 			continue;
 		}
 
-		/* 5. Execution uniquement si la commande existe */
+		/* 5. Exécution si la commande existe */
 		pid = fork();
 		if (pid == -1)
 		{
@@ -74,12 +75,13 @@ int main(int ac, char **av, char **env)
 		else
 		{
 			wait(&status);
+			if (WIFEXITED(status))
+				last_status = WEXITSTATUS(status);
 		}
 
-		/* Nettoyage de la mémoire du tour de boucle */
 		free(cmd_path);
 		free(line);
 		free(argv);
 	}
-	return (0);
+	return (last_status);
 }
