@@ -23,6 +23,7 @@ int main(int argc, char **argv, char **envp)
 
 	while (1)
 	{
+		if (isatty(STDIN_FILENO))
 		printf("#cisfun$ ");
 
 		if (getline(&line, &len, stdin) == -1)
