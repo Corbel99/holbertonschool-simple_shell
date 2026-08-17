@@ -23,10 +23,7 @@ char *read_line(void)
 	if (read_bytes == -1)
 	{
 		free(line);
-		if (feof(stdin))
-			exit(EXIT_SUCCESS);
-		perror("Error readline");
-		exit(EXIT_FAILURE);
+		exit(EXIT_SUCCESS);
 	}
 	return (line);
 }
