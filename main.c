@@ -2,49 +2,70 @@
 
 /**
  * main - Boucle principale du simple shell
- * @ac: Nombre d'arguments
- * @av: Tableau d'arguments
+ * @ac: Nombre d'arguments (non utilisé)
+ * @av: Tableau d'arguments (non utilisé)
  * @env: Environnement système
  * Return: 0 en cas de succès
  */
 int main(int ac, char **av, char **env)
 {
-	char *line;
-	char **argv;
-	(void)ac;
-	(void)av;
+    char *line;
+    char **argv;
+    pid_t pid;
+    int status;
 
-	while (1)
-	{
-		/* 1. Appel affichage du prompt */
-		display_prompt();
+    (void)ac;
+    (void)av;
 
-		/* 2. Appel lecture de la ligne */
-		line = read_line();
+    while (1)
+    {
+        display_prompt();
+        line = read_line();
+        argv = parse_line(line);
 
-		/* 3. Appel découpage de la ligne */
-		argv = parse_line(line);
+        /* Gestion ligne vide */
+        if (argv[0] == NULL)
+        {
+            free(line);
+            free(argv);
+            continue;
+        }
 
-		/* Gestion ligne vide */
-		if (argv[0] == NULL)
-		{
-			free(line);
-			free(argv);
-			continue;
-		}
+        /* Gestion des built-ins */
+        if (check_builtin(argv, line, env))
+        {
+            free(line);
+            free(argv);
+            continue;
+        }
 
-		/* 4. Appel vérification des built-ins */
-		if (check_builtin(argv, line, env))
-		{
-			free(line);
-			free(argv);
-			continue;
-		}
+        /* Exécution directe avec argv[0] */
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            free(line);
+            free(argv);
+            continue;
+        }
 
-		/* Part de ton binôme : find_path(), fork(), execve() */
+        if (pid == 0)
+        {
+            if (execve(argv[0], argv, env) == -1)
+            {
+                perror(argv[0]);
+                free(line);
+                free(argv);
+                exit(1);
+            }
+        }
+        else
+        {
+            wait(&status);
+        }
 
-		free(line);
-		free(argv);
-	}
-	return (0);
+        free(line);
+        free(argv);
+    }
+    return (0);
 }
