@@ -12,5 +12,7 @@ void display_prompt(void);
 char *read_line(void);
 char **parse_line(char *line);
 int check_builtin(char **argv, char *line, char **env);
+char *find_path(char *command, char **envp);
+char *get_path(char **envp);
 
 #endif
