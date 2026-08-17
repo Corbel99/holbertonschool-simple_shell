@@ -14,6 +14,7 @@ int main(int argc, char **argv, char **envp)
 {
 	char *line = NULL;
 	size_t len = 0;
+	char *cmd;
 	pid_t pid;
 	int status;
 	char **exec_argv;
@@ -29,20 +30,19 @@ int main(int argc, char **argv, char **envp)
 		if (getline(&line, &len, stdin) == -1)
 			break;
 
-		len = strlen(line);
+		/* Extraction de la commande (élimine espaces, tabulations et \n) */
+		cmd = strtok(line, " \t\n");
 
-		/* Supprime le retour à la ligne ajouté par getline */
-		if (line[len - 1] == '\n')
-			line[len - 1] = '\0';
-
-		/* Récupère uniquement la commande */
-		line = strtok(line, " \t");
+		/* Si la ligne est vide ou ne contient que des espaces/sauts de ligne */
+		if (cmd == NULL)
+			continue;
 
 		pid = fork();
 
 		if (pid == -1)
 		{
 			perror("fork");
+			free(line);
 			return (1);
 		}
 
@@ -53,16 +53,18 @@ int main(int argc, char **argv, char **envp)
 			if (exec_argv == NULL)
 			{
 				perror("malloc");
-				return (1);
+				free(line);
+				exit(1);
 			}
 
-			exec_argv[0] = line;
+			exec_argv[0] = cmd;
 			exec_argv[1] = NULL;
 
-			execve(line, exec_argv, envp);
+			execve(cmd, exec_argv, envp);
 			perror("execve");
 			free(exec_argv);
-			return (1);
+			free(line);
+			exit(1);
 		}
 
 		if (pid > 0)
