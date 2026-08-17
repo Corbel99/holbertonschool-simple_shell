@@ -102,70 +102,67 @@ int check_builtin(char **argv, char *line, char **env)
 	return (0);
 }
 
+
 /**
- * find_path - finds the full path of a command
- * @command: command entered by the user
- * @envp: environment variables
- *
- * Return: full path if found, NULL otherwise
+ * get_path - Récupère la valeur de la variable PATH
+ * @envp: Environnement système
+ * Return: Pointeur vers la valeur du PATH, ou NULL
+ */
+char *get_path(char **envp)
+{
+	int i;
+
+	if (!envp)
+		return (NULL);
+
+	for (i = 0; envp[i] != NULL; i++)
+	{
+		if (strncmp(envp[i], "PATH=", 5) == 0)
+			return (envp[i] + 5);
+	}
+	return (NULL);
+}
+
+/**
+ * find_path - Trouve le chemin complet d'une commande
+ * @command: Commande tapée
+ * @envp: Environnement système
+ * Return: Pointeur alloué vers le chemin, ou NULL
  */
 char *find_path(char *command, char **envp)
 {
-	char *path = NULL;
-	char *path_copy;
-	char *token;
-	char *pathname;
+	char *path, *path_copy, *token, *pathname;
+
+	if (!command || !*command)
+		return (NULL);
+	if (strchr(command, '/') != NULL)
+		return (access(command, X_OK) == 0 ? strdup(command) : NULL);
 
 	path = get_path(envp);
-
-	if (path == NULL)
+	if (!path)
 		return (NULL);
 
 	path_copy = strdup(path);
-
-	if (path_copy == NULL)
+	if (!path_copy)
 		return (NULL);
 
 	token = strtok(path_copy, ":");
-
-	while (token != NULL)
+	while (token)
 	{
 		pathname = malloc(strlen(token) + strlen(command) + 2);
-
-		if (pathname == NULL)
-		{
-			free(path_copy);
-			return (NULL);
-		}
-
+		if (!pathname)
+			break;
 		strcpy(pathname, token);
 		strcat(pathname, "/");
 		strcat(pathname, command);
-
 		if (access(pathname, X_OK) == 0)
 		{
 			free(path_copy);
 			return (pathname);
 		}
-
 		free(pathname);
 		token = strtok(NULL, ":");
 	}
-
 	free(path_copy);
-	return (NULL);
-}
-
-char *get_path(char **envp)
-{
-	int i;
-
-	for (i = 0; envp[i] != NULL; i++)
-	{
-		if (strncmp(envp[i], "PATH=", 5) == 0)
-		{
-			return (envp[i] + 5);
-		}
-	}
 	return (NULL);
 }
