@@ -1,0 +1,49 @@
+.TH SIMPLE_SHELL 1 "Août 2026" "1.0" "Manuel du Simple Shell"
+.SH NOM
+hsh \- Interpréteur de commandes UNIX simple
+.SH SYNOPSIS
+.B hsh
+.SH DESCRIPTION
+.B hsh
+est un interpréteur de langage de commande UNIX simple qui exécute des commandes lues depuis l'entrée standard ou un pipe.
+
+Il découpe la saisie utilisateur en arguments, localise les exécutables grâce à la variable d'environnement \fBPATH\fR, et les exécute dans un processus enfant via \fBfork\fR et \fBexecve\fR.
+.SH INVOCATION
+.B hsh
+peut être exécuté en mode interactif et non-interactif.
+.PP
+En \fBmode interactif\fR, le shell affiche le prompt \fB#cisfun$\fR et attend les commandes de l'utilisateur.
+.PP
+En \fBmode non-interactif\fR, les commandes sont transmises directement à l'entrée standard (par exemple via \fBecho\fR ou une redirection).
+.SH COMMANDES INTÉGRÉES
+.TP
+.B exit
+Quitte le shell avec le statut de la dernière commande exécutée.
+.TP
+.B env
+Affiche toutes les variables d'environnement actuelles sur la sortie standard.
+.SH VALEUR DE RETOUR
+Retourne 0 lors d'une sortie propre, 127 si une commande est introuvable, ou le statut de sortie de la dernière commande exécutée.
+.SH EXEMPLES
+Exécution en mode interactif :
+.IP
+.nf
+$ ./hsh
+#cisfun$ ls -la
+#cisfun$ exit
+.fi
+.PP
+Exécution en mode non-interactif :
+.IP
+.nf
+$ echo "pwd" | ./hsh
+/home/user/holbertonschool-simple_shell
+.fi
+.SH AUTEURS
+Thomas Corbel et Bilal Maksoud  étudiants d'Holberton School.
+.SH VOIR AUSSI
+.BR sh (1),
+.BR bash (1),
+.BR execve (2),
+.BR fork (2),
+.BR wait (2)
