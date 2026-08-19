@@ -39,8 +39,6 @@ Exécution en mode non-interactif :
 $ echo "pwd" | ./hsh
 /home/user/holbertonschool-simple_shell
 .fi
-.SH AUTEURS
-Thomas Corbel et Bilal Maksoud  étudiants d'Holberton School.
 .SH VOIR AUSSI
 .BR sh (1),
 .BR bash (1),
