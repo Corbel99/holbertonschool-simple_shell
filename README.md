@@ -6,7 +6,9 @@
 
 Le programme lit les lignes d'instructions saisies par l'utilisateur ou envoyées via un flux, découpe la commande en arguments, cherche l'exécutable correspondant dans les répertoires définis par la variable d'environnement `PATH`, puis lance son exécution au sein d'un processus enfant.
 
----
+--- 
+
+![Logigramme Simple Shell](./flowchart.png)
 
 ## Fonctionnalités
 
